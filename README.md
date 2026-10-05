@@ -157,7 +157,8 @@ recensioni si incollano a mano (*+ Aggiungi recensione*) e la risposta si copia.
    per carte in scadenza e pagamenti falliti.
 
 > Il piano gratuito Hobby di Vercel è solo per uso non commerciale e permette cron solo giornalieri:
-> per vendere serve **Vercel Pro** (~$20/mese), che supporta anche il cron orario.
+> per vendere serve **Vercel Pro** (~$20/mese). Per restare compatibile con Hobby durante i test,
+> `vercel.json` sincronizza una volta al giorno: passando a Pro cambia `"7 6 * * *"` in `"7 * * * *"` (ogni ora).
 
 ## Checklist "una volta sola"
 
