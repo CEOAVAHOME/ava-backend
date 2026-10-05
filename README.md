@@ -6,6 +6,8 @@ Micro-SaaS B2B per attività locali (ristoranti, hotel, saloni, cliniche dentali
 2. **Post social** per Instagram, Facebook e Google Business, con anteprima smartphone.
 3. **Analisi del sentiment** con i temi ricorrenti (attese, personale, prezzi…) e suggerimenti operativi.
 
+![Landing page](docs/screenshots/landing-desktop.png)
+
 Piani: **Base** €79/mese (€63 annuale) · **Pro** €149/mese (€119 annuale) · prova gratuita di 14 giorni.
 
 ## Stack
