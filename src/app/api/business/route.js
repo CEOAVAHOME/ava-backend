@@ -40,8 +40,14 @@ export async function PUT(req) {
     data.googleLocationName = body.googleLocationName || null;
   }
 
+  if (typeof body.autoDraftReplies === 'boolean') data.autoDraftReplies = body.autoDraftReplies;
+  if (typeof body.autoPublishReplies === 'boolean') data.autoPublishReplies = body.autoPublishReplies;
+  if ([3, 4, 5].includes(Number(body.autoPublishMinRating))) data.autoPublishMinRating = Number(body.autoPublishMinRating);
+  const userData = typeof body.weeklyDigest === 'boolean' ? { weeklyDigest: body.weeklyDigest } : {};
+
   if (!hasDatabase) return NextResponse.json({ business: { ...ctx.business, ...data }, demo: true });
 
   const business = await prisma.business.update({ where: { id: ctx.business.id }, data });
+  if (Object.keys(userData).length) await prisma.user.update({ where: { id: ctx.user.id }, data: userData });
   return NextResponse.json({ business });
 }

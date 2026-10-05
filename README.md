@@ -10,6 +10,21 @@ Micro-SaaS B2B per attività locali (ristoranti, hotel, saloni, cliniche dentali
 
 Piani: **Base** €79/mese (€63 annuale) · **Pro** €149/mese (€119 annuale) · prova gratuita di 14 giorni.
 
+## Cosa gira da solo
+
+| Quando | Cosa succede | Dove |
+| --- | --- | --- |
+| Ogni ora | Importa le nuove recensioni Google di tutti i clienti attivi, scrive la risposta AI e — se il cliente l'ha attivato — la pubblica sulle recensioni da 4-5 stelle | `api/cron/sync` |
+| Ogni giorno | Email "la prova scade tra 3 giorni" e "prova terminata" | `api/cron/daily` |
+| Ogni lunedì | Riepilogo settimanale a ogni cliente (nuove recensioni, voto medio, bozze) | `api/cron/daily` |
+| All'iscrizione | Email di benvenuto con i 3 passi per partire | `api/register`, NextAuth |
+| Pagamento fallito | Email al cliente; Stripe riprova da solo l'addebito | `api/stripe/webhook` |
+| Sempre | Strumento gratuito pubblico `/risposta-recensioni` (3 usi al giorno) che porta visitatori da Google | `api/free-reply` |
+| Quando vuoi | Pannello `/admin`: MRR, clienti, prove, disdette, saldo e bonifici Stripe | `admin/` |
+
+Le risposte pubblicate in automatico sono solo quelle generate davvero dall'AI (mai il testo di ripiego)
+e solo per le recensioni con il voto minimo scelto dal cliente; le negative restano sempre in bozza.
+
 ## Stack
 
 | Livello      | Tecnologia                                                        |
@@ -130,11 +145,37 @@ recensioni si incollano a mano (*+ Aggiungi recensione*) e la risposta si copia.
    (record A `76.76.21.21` per il dominio principale, CNAME `cname.vercel-dns.com` per `www`).
 5. Aggiorna gli URL di redirect di Google OAuth e del webhook Stripe con il dominio definitivo.
 
+### 7. Automazioni e pannello incassi
+
+1. `CRON_SECRET`: `openssl rand -hex 32` — Vercel lo invia ai cron definiti in `vercel.json`.
+2. Email: crea un account su https://resend.com, verifica il dominio (record DNS che Resend ti indica)
+   e imposta `RESEND_API_KEY` e `EMAIL_FROM` (es. `ReviewGenius <ciao@reviewgenius.it>`).
+3. `ADMIN_EMAILS`: la tua email. Dopo il login apri `/admin` per vedere gli incassi.
+4. `FREE_TOOL_DAILY_CAP`: tetto giornaliero dello strumento gratuito (default 300 risposte ≈ pochi centesimi
+   con `gpt-4o-mini`). Imposta anche un limite di spesa mensile su https://platform.openai.com/settings/organization/limits.
+5. Su Stripe attiva *Settings → Billing → Subscriptions and emails → Smart Retries* e le email automatiche
+   per carte in scadenza e pagamenti falliti.
+
+> Il piano gratuito Hobby di Vercel è solo per uso non commerciale e permette cron solo giornalieri:
+> per vendere serve **Vercel Pro** (~$20/mese), che supporta anche il cron orario.
+
+## Checklist "una volta sola"
+
+1. [ ] Apri P.IVA (regime forfettario, se ne hai i requisiti) e un conto aziendale
+2. [ ] Compra il dominio `reviewgenius.it`
+3. [ ] Crea gli account: Supabase, Vercel Pro, OpenAI, Stripe (verifica identità + IBAN), Resend, Google Cloud
+4. [ ] Invia la richiesta di accesso alla Google Business Profile API (può richiedere giorni)
+5. [ ] Inserisci le variabili d'ambiente su Vercel e fai il deploy (sezioni 1-7)
+6. [ ] Registra il sito su Google Search Console e invia `https://reviewgenius.it/sitemap.xml`
+7. [ ] Pubblica Privacy Policy, Cookie Policy e Termini di servizio
+
+Fatto questo, il tuo lavoro ricorrente è aprire `/admin`, controllare che il riquadro sia verde e
+rispondere alle rare email di assistenza.
+
 ## Prima del lancio
 
 - [ ] Sostituire le testimonianze segnaposto (`src/components/landing/Testimonials.js`) con quelle di clienti reali.
 - [ ] Aggiungere Privacy Policy, Cookie Policy e Termini di servizio (obbligatori per GDPR e per la verifica Google OAuth).
 - [ ] Limiti per piano: oggi l'accesso è controllato solo da prova/abbonamento attivo; i limiti
       "1 sede / 3 sedi" e "20 post al mese" non sono ancora applicati lato server.
-- [ ] Sincronizzazione automatica periodica (per esempio Vercel Cron su `/api/reviews/sync` per ogni attività).
 - [ ] Reset password via email (oggi solo login con password o Google).

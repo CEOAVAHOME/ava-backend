@@ -6,6 +6,7 @@ export const DEMO_USER = {
   name: 'Marco Rossi',
   email: 'demo@reviewgenius.it',
   plan: 'PRO',
+  weeklyDigest: true,
 };
 
 export const DEMO_BUSINESS = {
@@ -16,6 +17,9 @@ export const DEMO_BUSINESS = {
   tone: 'cordiale',
   googleLocationName: null,
   lastSyncedAt: null,
+  autoDraftReplies: true,
+  autoPublishReplies: false,
+  autoPublishMinRating: 4,
 };
 
 export const DEMO_REVIEWS = [

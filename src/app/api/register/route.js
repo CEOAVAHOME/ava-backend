@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { hasDatabase } from '@/lib/env';
+import { sendOnce } from '@/lib/email';
 
 export async function POST(req) {
   if (!hasDatabase) {
@@ -35,6 +36,8 @@ export async function POST(req) {
       },
     },
   });
+
+  await sendOnce(user, 'welcome', 'once');
 
   return NextResponse.json({ id: user.id }, { status: 201 });
 }

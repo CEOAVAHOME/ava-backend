@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hasDatabase } from '@/lib/env';
 import { planFromPriceId, stripe } from '@/lib/stripe';
+import { sendOnce } from '@/lib/email';
 
 // Configura su Stripe: Developers → Webhooks → endpoint `${APP_URL}/api/stripe/webhook`
-// Eventi: checkout.session.completed, customer.subscription.created/updated/deleted
+// Eventi: checkout.session.completed, customer.subscription.created/updated/deleted,
+// invoice.payment_failed
 
 async function syncSubscription(subscription) {
   const item = subscription.items?.data?.[0];
@@ -24,7 +26,9 @@ async function syncSubscription(subscription) {
       stripeSubscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       plan,
+      billingInterval: item?.price?.recurring?.interval === 'year' ? 'yearly' : 'monthly',
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
+      canceledAt: subscription.status === 'canceled' ? new Date((subscription.ended_at || subscription.canceled_at || Date.now() / 1000) * 1000) : null,
     },
   });
 }
@@ -59,6 +63,13 @@ export async function POST(req) {
       case 'customer.subscription.deleted':
         await syncSubscription(event.data.object);
         break;
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
+        const user = customerId && (await prisma.user.findUnique({ where: { stripeCustomerId: customerId } }));
+        if (user) await sendOnce(user, 'payment_failed', invoice.id);
+        break;
+      }
       default:
         break;
     }

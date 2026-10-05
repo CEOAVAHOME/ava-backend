@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from './prisma';
 import { hasDatabase, hasGoogle } from './env';
 import { DEMO_USER } from './mock-data';
+import { sendOnce } from './email';
 
 export const GOOGLE_BUSINESS_SCOPE = 'https://www.googleapis.com/auth/business.manage';
 
@@ -60,6 +61,12 @@ export const authOptions = {
   session: { strategy: 'jwt' },
   pages: { signIn: '/login' },
   providers,
+  events: {
+    // Utenti creati dall'adapter (registrazione con Google)
+    async createUser({ user }) {
+      if (hasDatabase) await sendOnce(user, 'welcome', 'once');
+    },
+  },
   callbacks: {
     async signIn({ account }) {
       // L'adapter salva i token solo al primo collegamento: aggiorniamoli a ogni login Google.

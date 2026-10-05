@@ -24,12 +24,18 @@ model User {
   stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
   plan                 Plan      @default(FREE)
+  billingInterval      String?   // "monthly" | "yearly"
   subscriptionStatus   String?
   currentPeriodEnd     DateTime?
+  canceledAt           DateTime?
+
+  // Preferenze email (riepilogo settimanale)
+  weeklyDigest Boolean @default(true)
 
   accounts   Account[]
   sessions   Session[]
   businesses Business[]
+  emails     EmailLog[]
 }
 
 model Account {
@@ -103,6 +109,13 @@ model Business {
   // es. "accounts/123/locations/456" (Google Business Profile)
   googleLocationName String?
   lastSyncedAt       DateTime?
+  lastSyncError      String?
+
+  // Automazioni
+  autoDraftReplies   Boolean @default(true)  // bozza AI per ogni nuova recensione
+  autoPublishReplies Boolean @default(false) // pubblica da sola su Google
+  autoPublishMinRating Int   @default(4)     // solo recensioni con voto >= di questo
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -148,4 +161,27 @@ model GeneratedPost {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@index([businessId, createdAt])
+}
+
+// Email automatiche inviate (evita doppioni: una per tipo/chiave)
+model EmailLog {
+  id     String   @id @default(cuid())
+  userId String
+  type   String   // welcome | trial_ending | trial_ended | weekly_digest | payment_failed
+  key    String   // es. "2026-W41" per il riepilogo settimanale
+  sentAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, key])
+}
+
+// Limite d'uso dello strumento gratuito pubblico (per IP anonimizzato e giorno)
+model FreeToolUsage {
+  id     String @id @default(cuid())
+  ipHash String
+  day    String // YYYY-MM-DD
+  count  Int    @default(0)
+
+  @@unique([ipHash, day])
 }

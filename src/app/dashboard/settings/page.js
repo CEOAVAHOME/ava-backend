@@ -35,6 +35,10 @@ export default function SettingsPage() {
           category: d.business.category,
           tone: d.business.tone,
           googleLocationName: d.business.googleLocationName || '',
+          autoDraftReplies: d.business.autoDraftReplies ?? true,
+          autoPublishReplies: d.business.autoPublishReplies ?? false,
+          autoPublishMinRating: d.business.autoPublishMinRating ?? 4,
+          weeklyDigest: d.user.weeklyDigest ?? true,
         });
       });
   }, []);
@@ -105,6 +109,7 @@ export default function SettingsPage() {
   }
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const toggle = (k) => (e) => setForm({ ...form, [k]: e.target.checked });
   const { user } = info;
   const paid = user.plan && user.plan !== 'FREE';
 
@@ -172,6 +177,38 @@ export default function SettingsPage() {
             )}
           </div>
         )}
+
+        {info.business.lastSyncError && (
+          <div className="alert alert-error">Ultima sincronizzazione non riuscita: {info.business.lastSyncError}</div>
+        )}
+
+        <h3 className="mb-0" style={{ marginTop: 10 }}>Automazioni</h3>
+        <p className="muted mb-0" style={{ fontSize: '0.88rem' }}>
+          Le recensioni Google vengono importate da sole ogni ora. Scegli cosa deve fare ReviewGenius al posto tuo.
+        </p>
+        <label className="review-item row" style={{ cursor: 'pointer' }}>
+          <input type="checkbox" checked={form.autoDraftReplies} onChange={toggle('autoDraftReplies')} />
+          <span><strong>Scrivi la risposta in automatico</strong><br /><span className="muted" style={{ fontSize: '0.85rem' }}>Ogni nuova recensione arriva con la risposta AI già pronta in bozza.</span></span>
+        </label>
+        <label className="review-item row" style={{ cursor: 'pointer', opacity: form.autoDraftReplies ? 1 : 0.5 }}>
+          <input type="checkbox" checked={form.autoPublishReplies} disabled={!form.autoDraftReplies} onChange={toggle('autoPublishReplies')} />
+          <span className="grow">
+            <strong>Pubblica da sola su Google</strong><br />
+            <span className="muted" style={{ fontSize: '0.85rem' }}>
+              Le risposte alle recensioni con voto da{' '}
+              <select className="select" style={{ width: 'auto', padding: '2px 8px', display: 'inline-block' }} value={form.autoPublishMinRating} onChange={set('autoPublishMinRating')} disabled={!form.autoPublishReplies}>
+                <option value={5}>5 stelle</option>
+                <option value={4}>4 stelle in su</option>
+                <option value={3}>3 stelle in su</option>
+              </select>{' '}
+              vengono pubblicate senza approvazione. Le altre restano in bozza per te.
+            </span>
+          </span>
+        </label>
+        <label className="review-item row" style={{ cursor: 'pointer' }}>
+          <input type="checkbox" checked={form.weeklyDigest} onChange={toggle('weeklyDigest')} />
+          <span><strong>Riepilogo settimanale via email</strong><br /><span className="muted" style={{ fontSize: '0.85rem' }}>Ogni lunedì: nuove recensioni, voto medio e bozze da approvare.</span></span>
+        </label>
 
         <div>
           <button className="btn btn-primary" disabled={saving}>{saving ? <span className="spinner" /> : 'Salva impostazioni'}</button>

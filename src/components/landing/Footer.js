@@ -7,6 +7,7 @@ export default function Footer() {
       <div className="container row-between wrap">
         <Logo />
         <div className="row wrap" style={{ gap: 22 }}>
+          <Link href="/risposta-recensioni">Risposte gratis</Link>
           <Link href="/pricing">Prezzi</Link>
           <Link href="/#faq">FAQ</Link>
           <Link href="/login">Accedi</Link>

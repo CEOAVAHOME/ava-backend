@@ -7,6 +7,7 @@ export default function Navbar() {
       <div className="container">
         <Logo />
         <nav className="nav-links">
+          <Link href="/risposta-recensioni">Strumento gratuito</Link>
           <Link href="/#funzionalita">Funzionalità</Link>
           <Link href="/#testimonianze">Clienti</Link>
           <Link href="/pricing">Prezzi</Link>

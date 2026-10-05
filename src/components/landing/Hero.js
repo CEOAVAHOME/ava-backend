@@ -15,7 +15,7 @@ export default function Hero() {
         </p>
         <div className="hero-cta fade-up">
           <Link href="/register" className="btn btn-primary btn-lg">Inizia la prova gratuita di 14 giorni</Link>
-          <Link href="/login" className="btn btn-ghost btn-lg">Guarda la demo</Link>
+          <Link href="/risposta-recensioni" className="btn btn-ghost btn-lg">Prova lo strumento gratis</Link>
         </div>
         <p className="hero-proof">Nessuna carta richiesta · Disdici quando vuoi · Configurazione in 3 minuti</p>
 
